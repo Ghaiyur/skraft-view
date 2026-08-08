@@ -82,6 +82,7 @@ The repository now includes a Windows release workflow:
 How it works:
 
 - push a tag like `v0.1.0`
+- or publish a release in the GitHub web UI for a tag like `v0.1.0`
 - GitHub Actions builds the standalone Windows app
 - the workflow zips the packaged build
 - the zip is uploaded to the repository's Releases section
