@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+staticfiles/
+.DS_Store
+Thumbs.db
+build/work/
+build/spec/
+build/pyinstaller/
+build/windows/
+dist/
