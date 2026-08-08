@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/github/license/Ghaiyur/skraft-view?label=license)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/Ghaiyur/skraft-view?display_name=tag&label=release)](https://github.com/Ghaiyur/skraft-view/releases)
 [![Last Commit](https://img.shields.io/github/last-commit/Ghaiyur/skraft-view?label=last%20commit)](https://github.com/Ghaiyur/skraft-view/commits/master)
+[![Basic Checks](https://github.com/Ghaiyur/skraft-view/actions/workflows/checks.yml/badge.svg)](https://github.com/Ghaiyur/skraft-view/actions/workflows/checks.yml)
 [![Windows Release Build](https://github.com/Ghaiyur/skraft-view/actions/workflows/release-windows.yml/badge.svg)](https://github.com/Ghaiyur/skraft-view/actions/workflows/release-windows.yml)
 
 SKRAFT View is an open source desktop system monitor with a local web dashboard.
