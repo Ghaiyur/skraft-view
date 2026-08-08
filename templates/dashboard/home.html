@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>skraft view</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    <script defer src="{% static 'js/app.js' %}"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="ambient ambient-one"></div>
+      <div class="ambient ambient-two"></div>
+
+      <header class="hero">
+        <div class="brand-row">
+          <img
+            class="brand-logo"
+            src="{% static 'img/skraft-logo.svg' %}"
+            alt="SKRAFT logo"
+          />
+          <div class="top-actions">
+            <button class="theme-toggle" type="button" data-theme-toggle>
+              Toggle theme
+            </button>
+            <button class="quit-button" type="button" data-quit-app>
+              Quit app
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Open source system visibility</p>
+            <h1>skraft view</h1>
+            <p class="lede">
+              Lightweight monitoring for the machine you are on, with a clean live
+              dashboard, hardware inventory, and straightforward legal terms.
+            </p>
+          </div>
+
+          <div class="hero-card">
+            <p class="card-label">Live summary</p>
+            <div class="metric-stack">
+              <article class="metric-card accent-green">
+                <span>CPU</span>
+                <strong data-metric="cpu_percent" data-format="percent">{{ metrics.cpu_percent }}%</strong>
+              </article>
+              <article class="metric-card accent-blue">
+                <span>Memory</span>
+                <strong data-metric="memory_percent" data-format="percent">{{ metrics.memory_percent }}%</strong>
+              </article>
+              <article class="metric-card accent-amber">
+                <span>Disk</span>
+                <strong data-metric="disk_percent" data-format="percent">{{ metrics.disk_percent }}%</strong>
+              </article>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-grid">
+        <nav class="tab-bar" aria-label="Sections">
+          <button class="tab is-active" type="button" data-tab-target="overview">Overview</button>
+          <button class="tab" type="button" data-tab-target="inventory">What's on it</button>
+          <button class="tab" type="button" data-tab-target="legal">Terms</button>
+        </nav>
+
+        <section class="panel is-active" data-tab-panel="overview">
+          <div class="panel-grid">
+            <article class="glass-card">
+              <p class="card-label">Memory usage</p>
+              <h2><span data-metric="memory_used_gb">{{ metrics.memory_used_gb }}</span> / <span data-metric="memory_total_gb">{{ metrics.memory_total_gb }}</span> GB</h2>
+              <div class="meter">
+                <span data-meter="memory_percent" style="width: {{ metrics.memory_percent }}%"></span>
+              </div>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Storage usage</p>
+              <h2><span data-metric="disk_used_gb">{{ metrics.disk_used_gb }}</span> / <span data-metric="disk_total_gb">{{ metrics.disk_total_gb }}</span> GB</h2>
+              <div class="meter">
+                <span data-meter="disk_percent" style="width: {{ metrics.disk_percent }}%"></span>
+              </div>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Network transfer</p>
+              <h2><span data-metric="bytes_sent_mb">{{ metrics.bytes_sent_mb }}</span> MB up</h2>
+              <p class="secondary"><span data-metric="bytes_recv_mb">{{ metrics.bytes_recv_mb }}</span> MB down</p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Boot time</p>
+              <h2 data-metric="boot_time_display">{{ metrics.boot_time_display }}</h2>
+              <p class="secondary">Updated every 3 seconds</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" data-tab-panel="inventory">
+          <div class="inventory-card">
+            <div>
+              <p class="eyebrow">Machine inventory</p>
+              <h2>What's on it</h2>
+            </div>
+            <dl class="inventory-list">
+              {% for item in inventory %}
+              <div class="inventory-row">
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+              </div>
+              {% endfor %}
+            </dl>
+          </div>
+        </section>
+
+        <section class="panel" data-tab-panel="legal">
+          <div class="legal-grid">
+            <article class="glass-card legal-card">
+              <p class="eyebrow">Terms of use</p>
+              <h2>Open source</h2>
+              <p>
+                skraft view is open source. We will decide what else to add in this
+                section later as the project grows.
+              </p>
+            </article>
+
+            <article class="glass-card legal-card">
+              <p class="eyebrow">Privacy</p>
+              <h2>Local-first by default</h2>
+              <p>
+                This starter build reads system information from the current machine
+                for display in the dashboard. It does not include remote telemetry,
+                account sync, or cloud upload features.
+              </p>
+            </article>
+
+            <article class="glass-card legal-card">
+              <p class="eyebrow">Branding</p>
+              <h2>Transparent SKRAFT wordmark</h2>
+              <p>
+                The included logo asset uses a transparent background so it works in
+                both light and dark themes without needing separate image files.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
