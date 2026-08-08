@@ -1,6 +1,5 @@
 import threading
 
-
 _shutdown_callback = None
 _lock = threading.Lock()
 

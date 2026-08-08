@@ -1,7 +1,6 @@
 import threading
 import time
 
-
 SESSION_TIMEOUT_SECONDS = 15
 _sessions: dict[str, float] = {}
 _lock = threading.Lock()
