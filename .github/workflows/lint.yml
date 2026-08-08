@@ -19,6 +19,7 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v6
+
         with:
           python-version: "3.12"
 
@@ -33,3 +34,4 @@ jobs:
 
       - name: Run Ruff lint
         run: ruff check dashboard skraft_view launch_skraft_view.py manage.py
+
