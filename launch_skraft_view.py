@@ -154,12 +154,16 @@ def run_server() -> None:
     print("Close this window to stop the local app.")
 
     if not NO_BROWSER:
-        threading.Thread(target=open_browser_when_ready, args=(url,), daemon=True).start()
+        threading.Thread(
+            target=open_browser_when_ready, args=(url,), daemon=True
+        ).start()
 
     app = StaticFilesHandler(get_wsgi_application())
     with make_server("127.0.0.1", port, app) as httpd:
         register_shutdown_callback(httpd.shutdown)
-        threading.Thread(target=monitor_for_shutdown, args=(httpd,), daemon=True).start()
+        threading.Thread(
+            target=monitor_for_shutdown, args=(httpd,), daemon=True
+        ).start()
         httpd.serve_forever()
 
 

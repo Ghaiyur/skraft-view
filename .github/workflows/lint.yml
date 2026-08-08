@@ -15,10 +15,11 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
+
         with:
           python-version: "3.12"
 
@@ -29,7 +30,8 @@ jobs:
           python -m pip install "ruff>=0.12,<1"
 
       - name: Run Ruff format check
-        run: ruff format --check .
+        run: ruff format --check dashboard skraft_view launch_skraft_view.py manage.py
 
       - name: Run Ruff lint
-        run: ruff check .
+        run: ruff check dashboard skraft_view launch_skraft_view.py manage.py
+

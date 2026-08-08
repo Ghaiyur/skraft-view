@@ -49,7 +49,9 @@ def collect_metrics() -> dict:
         "memory_total_gb": memory_total_gb,
         "disk_used_gb": _safe_round(disk.used / (1024**3)),
         "disk_total_gb": _safe_round(disk.total / (1024**3)),
-        "disk_percent": _safe_round((disk.used / disk.total) * 100 if disk.total else 0),
+        "disk_percent": _safe_round(
+            (disk.used / disk.total) * 100 if disk.total else 0
+        ),
         "bytes_sent_mb": _safe_round((net.bytes_sent / (1024**2)) if net else 0),
         "bytes_recv_mb": _safe_round((net.bytes_recv / (1024**2)) if net else 0),
         "boot_time": boot_time.isoformat(),
@@ -75,8 +77,14 @@ def collect_inventory() -> list[dict]:
     if psutil:
         inventory.extend(
             [
-                {"label": "Physical cores", "value": str(psutil.cpu_count(logical=False) or 0)},
-                {"label": "Logical cores", "value": str(psutil.cpu_count(logical=True) or 0)},
+                {
+                    "label": "Physical cores",
+                    "value": str(psutil.cpu_count(logical=False) or 0),
+                },
+                {
+                    "label": "Logical cores",
+                    "value": str(psutil.cpu_count(logical=True) or 0),
+                },
                 {
                     "label": "Installed memory",
                     "value": f"{_safe_round(psutil.virtual_memory().total / (1024**3))} GB",
