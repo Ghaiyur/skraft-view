@@ -127,6 +127,7 @@ def relaunch_inside_venv() -> None:
         [str(venv_python), str(PROJECT_DIR / "launch_skraft_view.py")],
         cwd=PROJECT_DIR,
         env=next_env,
+        check=False,
     )
     raise SystemExit(result.returncode)
 
@@ -140,10 +141,11 @@ def run_server() -> None:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "skraft_view.settings")
     sys.path.insert(0, str(PROJECT_DIR))
 
+    from wsgiref.simple_server import make_server
+
     import django
     from django.contrib.staticfiles.handlers import StaticFilesHandler
     from django.core.wsgi import get_wsgi_application
-    from wsgiref.simple_server import make_server
 
     django.setup()
 

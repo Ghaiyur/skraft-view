@@ -1,6 +1,6 @@
 import platform
 import socket
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from shutil import disk_usage
 
@@ -15,7 +15,8 @@ def _safe_round(value: float) -> float:
 
 
 def _format_boot_time(value: datetime) -> str:
-    return value.astimezone().strftime("%Y-%m-%d %I:%M %p")
+    local_value = value.astimezone()
+    return local_value.strftime("%Y-%m-%d %I:%M %p %Z")
 
 
 def collect_metrics() -> dict:
@@ -26,10 +27,10 @@ def collect_metrics() -> dict:
 
     if psutil:
         net = psutil.net_io_counters()
-        boot_time = datetime.fromtimestamp(psutil.boot_time(), tz=timezone.utc)
+        boot_time = datetime.fromtimestamp(psutil.boot_time(), tz=UTC)
     else:
         net = None
-        boot_time = datetime.now(tz=timezone.utc)
+        boot_time = datetime.now(tz=UTC)
 
     memory_used_gb = 0.0
     memory_total_gb = 0.0
@@ -42,7 +43,7 @@ def collect_metrics() -> dict:
         memory_percent = _safe_round(virtual_memory.percent)
 
     return {
-        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "timestamp": datetime.now(tz=UTC).isoformat(),
         "cpu_percent": _safe_round(cpu_percent),
         "memory_percent": memory_percent,
         "memory_used_gb": memory_used_gb,

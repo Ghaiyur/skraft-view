@@ -1,12 +1,11 @@
 import threading
 import time
-from typing import Optional
 
 
 SESSION_TIMEOUT_SECONDS = 15
 _sessions: dict[str, float] = {}
 _lock = threading.Lock()
-_last_empty_at: Optional[float] = None
+_last_empty_at: float | None = None
 _has_seen_session = False
 
 

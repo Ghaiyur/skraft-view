@@ -61,6 +61,22 @@ python -m pip install -r requirements.txt
 python launch_skraft_view.py
 ```
 
+## Local pre-commit checks
+
+To catch Ruff issues before pushing, enable the repo's local Git hook:
+
+```powershell
+.\scripts\install_git_hooks.ps1
+```
+
+After that, each commit will run:
+
+- `ruff format dashboard skraft_view launch_skraft_view.py manage.py`
+- `ruff check dashboard skraft_view launch_skraft_view.py manage.py`
+
+The hook auto-formats files first, stages those formatting updates, and then
+fails only if Ruff still finds a remaining lint issue.
+
 ## Windows packaging
 
 The current standalone Windows build script is:
