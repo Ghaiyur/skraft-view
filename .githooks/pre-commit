@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ -x ".venv/Scripts/python.exe" ]; then
+  PYTHON=".venv/Scripts/python.exe"
+elif [ -x ".venv/bin/python" ]; then
+  PYTHON=".venv/bin/python"
+elif command -v python >/dev/null 2>&1; then
+  PYTHON="python"
+else
+  echo "Python was not found. Skipping Ruff checks."
+  exit 1
+fi
+
+TARGETS="dashboard skraft_view launch_skraft_view.py manage.py"
+
+echo "Running Ruff formatter..."
+"$PYTHON" -m ruff format $TARGETS
+
+git add $TARGETS
+
+echo "Running Ruff lint..."
+"$PYTHON" -m ruff check $TARGETS
