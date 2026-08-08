@@ -6,6 +6,6 @@ extend-exclude = [
   "build",
   "dist",
 ]
-
 [tool.ruff.lint.per-file-ignores]
 "manage.py" = ["EXE001"]
+
