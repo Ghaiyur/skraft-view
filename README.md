@@ -122,4 +122,3 @@ python launch_skraft_view.py
 
 - `psutil` is used for lightweight cross-platform metrics.
 - The legal pages are still starter content and should be reviewed before release.
-- This project is not affiliated with NZXT.
