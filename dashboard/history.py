@@ -35,9 +35,9 @@ def _metric(value: dict, *path: str):
 def store_metric_sample(metrics: dict) -> None:
     now = timezone.now()
     latest_captured_at = (
-        MetricSample.objects.order_by("-captured_at").values_list(
-            "captured_at", flat=True
-        ).first()
+        MetricSample.objects.order_by("-captured_at")
+        .values_list("captured_at", flat=True)
+        .first()
     )
     if latest_captured_at and now - latest_captured_at < MIN_SAMPLE_INTERVAL:
         return
