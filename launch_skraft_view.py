@@ -15,6 +15,14 @@ REQUIREMENTS_FILE = PROJECT_DIR / "requirements.txt"
 NO_BROWSER = os.environ.get("SKRAFT_VIEW_NO_BROWSER") == "1"
 BOOTSTRAPPED_FLAG = "SKRAFT_VIEW_BOOTSTRAPPED"
 RUNNING_FROZEN = bool(getattr(sys, "frozen", False))
+WINDOWS_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+
+def run_hidden(command: list[str], **kwargs):
+    if os.name == "nt":
+        kwargs.setdefault("creationflags", WINDOWS_NO_WINDOW)
+    check = kwargs.pop("check", False)
+    return subprocess.run(command, check=check, **kwargs)
 
 
 def python_in_venv() -> Path:
@@ -40,7 +48,7 @@ def ensure_virtualenv() -> None:
         return
 
     print("Creating local virtual environment...")
-    subprocess.run([sys.executable, "-m", "venv", str(VENV_DIR)], check=True)
+    run_hidden([sys.executable, "-m", "venv", str(VENV_DIR)], check=True)
 
 
 def ensure_dependencies() -> None:
@@ -49,7 +57,7 @@ def ensure_dependencies() -> None:
 
     venv_python = python_in_venv()
     try:
-        subprocess.run(
+        run_hidden(
             [str(venv_python), "-c", "import django, psutil"],
             check=True,
             stdout=subprocess.DEVNULL,
@@ -57,7 +65,7 @@ def ensure_dependencies() -> None:
         )
     except subprocess.CalledProcessError:
         print("Installing project dependencies...")
-        subprocess.run(
+        run_hidden(
             [str(venv_python), "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE)],
             check=True,
         )
@@ -75,7 +83,7 @@ def ensure_database() -> None:
         return
 
     python_executable = str(python_in_venv())
-    subprocess.run(
+    run_hidden(
         [python_executable, "manage.py", "migrate", "--noinput"],
         cwd=PROJECT_DIR,
         check=True,
@@ -123,7 +131,7 @@ def relaunch_inside_venv() -> None:
     venv_python = python_in_venv()
     next_env = os.environ.copy()
     next_env[BOOTSTRAPPED_FLAG] = "1"
-    result = subprocess.run(
+    result = run_hidden(
         [str(venv_python), str(PROJECT_DIR / "launch_skraft_view.py")],
         cwd=PROJECT_DIR,
         env=next_env,
@@ -176,6 +184,6 @@ if __name__ == "__main__":
         print("\nskraft view stopped.")
     except Exception as exc:  # pragma: no cover
         print(f"\nUnable to launch skraft view: {exc}")
-        if os.name == "nt":
+        if os.name == "nt" and sys.stdin.isatty():
             input("Press Enter to close...")
         raise
