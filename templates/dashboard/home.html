@@ -45,15 +45,15 @@
             <div class="metric-stack">
               <article class="metric-card accent-green">
                 <span>CPU</span>
-                <strong data-metric="cpu_percent" data-format="percent">{{ metrics.cpu_percent }}%</strong>
+                <strong data-metric="cpu.utilization_percent" data-format="percent">{{ metrics.cpu.utilization_percent }}%</strong>
               </article>
               <article class="metric-card accent-blue">
                 <span>Memory</span>
-                <strong data-metric="memory_percent" data-format="percent">{{ metrics.memory_percent }}%</strong>
+                <strong data-metric="memory.utilization_percent" data-format="percent">{{ metrics.memory.utilization_percent }}%</strong>
               </article>
               <article class="metric-card accent-amber">
-                <span>Disk</span>
-                <strong data-metric="disk_percent" data-format="percent">{{ metrics.disk_percent }}%</strong>
+                <span>Storage</span>
+                <strong data-metric="storage.utilization_percent" data-format="percent">{{ metrics.storage.utilization_percent }}%</strong>
               </article>
             </div>
           </div>
@@ -63,6 +63,8 @@
       <main class="main-grid">
         <nav class="tab-bar" aria-label="Sections">
           <button class="tab is-active" type="button" data-tab-target="overview">Overview</button>
+          <button class="tab" type="button" data-tab-target="history">History</button>
+          <button class="tab" type="button" data-tab-target="alerts">Alerts</button>
           <button class="tab" type="button" data-tab-target="inventory">What's on it</button>
           <button class="tab" type="button" data-tab-target="legal">Terms</button>
         </nav>
@@ -71,31 +73,290 @@
           <div class="panel-grid">
             <article class="glass-card">
               <p class="card-label">Memory usage</p>
-              <h2><span data-metric="memory_used_gb">{{ metrics.memory_used_gb }}</span> / <span data-metric="memory_total_gb">{{ metrics.memory_total_gb }}</span> GB</h2>
+              <h2><span data-metric="memory.used_gb">{{ metrics.memory.used_gb }}</span> / <span data-metric="memory.total_gb">{{ metrics.memory.total_gb }}</span> GB</h2>
               <div class="meter">
-                <span data-meter="memory_percent" style="width: {{ metrics.memory_percent }}%"></span>
+                <span data-meter="memory.utilization_percent" style="width: {{ metrics.memory.utilization_percent }}%"></span>
               </div>
+              <p class="secondary">
+                <span data-metric="memory.available_gb">{{ metrics.memory.available_gb }}</span> GB available /
+                <span data-metric="memory.speed_mhz">{{ metrics.memory.speed_mhz|default_if_none:"N/A" }}</span> MHz speed
+              </p>
             </article>
 
             <article class="glass-card">
               <p class="card-label">Storage usage</p>
-              <h2><span data-metric="disk_used_gb">{{ metrics.disk_used_gb }}</span> / <span data-metric="disk_total_gb">{{ metrics.disk_total_gb }}</span> GB</h2>
+              <h2><span data-metric="storage.used_gb">{{ metrics.storage.used_gb }}</span> / <span data-metric="storage.total_gb">{{ metrics.storage.total_gb }}</span> GB</h2>
               <div class="meter">
-                <span data-meter="disk_percent" style="width: {{ metrics.disk_percent }}%"></span>
+                <span data-meter="storage.utilization_percent" style="width: {{ metrics.storage.utilization_percent }}%"></span>
               </div>
+              <p class="secondary">
+                Mount <span data-metric="storage.mount">{{ metrics.storage.mount }}</span> /
+                <span data-metric="storage.free_gb">{{ metrics.storage.free_gb }}</span> GB free
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Storage drives</p>
+              <dl class="inventory-list">
+                {% for drive in metrics.storage.drives %}
+                <div class="inventory-row">
+                  <dt>{{ drive.device }} ({{ drive.mount }})</dt>
+                  <dd>{{ drive.total_gb }} GB total / {{ drive.free_gb }} GB free</dd>
+                </div>
+                {% empty %}
+                <div class="inventory-row">
+                  <dt>No drives detected</dt>
+                  <dd>N/A</dd>
+                </div>
+                {% endfor %}
+              </dl>
             </article>
 
             <article class="glass-card">
               <p class="card-label">Network transfer</p>
-              <h2><span data-metric="bytes_sent_mb">{{ metrics.bytes_sent_mb }}</span> MB up</h2>
-              <p class="secondary"><span data-metric="bytes_recv_mb">{{ metrics.bytes_recv_mb }}</span> MB down</p>
+              <h2><span data-metric="network.bytes_sent_mb">{{ metrics.network.bytes_sent_mb }}</span> MB up</h2>
+              <p class="secondary">
+                <span data-metric="network.bytes_recv_mb">{{ metrics.network.bytes_recv_mb }}</span> MB down
+              </p>
+              <p class="secondary">
+                <span data-metric="network.interface">{{ metrics.network.interface|default_if_none:"N/A" }}</span> /
+                <span data-metric="network.speed_mbps">{{ metrics.network.speed_mbps|default_if_none:"N/A" }}</span> Mbps
+              </p>
+              <p class="secondary">
+                <span data-metric="network.upload_rate_mb_s">{{ metrics.network.upload_rate_mb_s }}</span> MB/s up /
+                <span data-metric="network.download_rate_mb_s">{{ metrics.network.download_rate_mb_s }}</span> MB/s down
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Disk I/O</p>
+              <h2>
+                <span data-metric="io.read_rate_mb_s">{{ metrics.io.read_rate_mb_s }}</span> MB/s read /
+                <span data-metric="io.write_rate_mb_s">{{ metrics.io.write_rate_mb_s }}</span> MB/s write
+              </h2>
+              <p class="secondary">
+                <span data-metric="io.read_iops">{{ metrics.io.read_iops }}</span> read IOPS /
+                <span data-metric="io.write_iops">{{ metrics.io.write_iops }}</span> write IOPS
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Top CPU processes</p>
+              <dl class="inventory-list">
+                {% for process in metrics.processes.top_cpu %}
+                <div class="inventory-row">
+                  <dt>{{ process.name }} (PID {{ process.pid }})</dt>
+                  <dd>{{ process.cpu_percent }}% CPU / {{ process.memory_mb }} MB</dd>
+                </div>
+                {% empty %}
+                <div class="inventory-row">
+                  <dt>No process data</dt>
+                  <dd>N/A</dd>
+                </div>
+                {% endfor %}
+              </dl>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Top memory processes</p>
+              <dl class="inventory-list">
+                {% for process in metrics.processes.top_memory %}
+                <div class="inventory-row">
+                  <dt>{{ process.name }} (PID {{ process.pid }})</dt>
+                  <dd>{{ process.memory_mb }} MB / {{ process.cpu_percent }}% CPU</dd>
+                </div>
+                {% empty %}
+                <div class="inventory-row">
+                  <dt>No process data</dt>
+                  <dd>N/A</dd>
+                </div>
+                {% endfor %}
+              </dl>
             </article>
 
             <article class="glass-card">
               <p class="card-label">Boot time</p>
-              <h2 data-metric="boot_time_display">{{ metrics.boot_time_display }}</h2>
+              <h2 data-metric="system.boot_time_display">{{ metrics.system.boot_time_display }}</h2>
               <p class="secondary">Updated every 3 seconds</p>
             </article>
+
+            <article class="glass-card">
+              <p class="card-label">GPU</p>
+              <h2 data-metric="gpu.model">{{ metrics.gpu.model|default_if_none:"N/A" }}</h2>
+              <p class="secondary">
+                VRAM
+                <span data-metric="gpu.vram_used_gb">{{ metrics.gpu.vram_used_gb|default_if_none:"N/A" }}</span>
+                /
+                <span data-metric="gpu.vram_total_gb">{{ metrics.gpu.vram_total_gb|default_if_none:"N/A" }}</span>
+                GB
+              </p>
+              <p class="secondary">
+                <span data-metric="gpu.utilization_percent" data-format="percent">{{ metrics.gpu.utilization_percent|default_if_none:"N/A" }}</span>
+                utilisation /
+                <span data-metric="gpu.temperature_c" data-format="temp">{{ metrics.gpu.temperature_c|default_if_none:"N/A" }}</span>
+                temp
+              </p>
+              <p class="secondary">
+                <span data-metric="gpu.power_w">{{ metrics.gpu.power_w|default_if_none:"N/A" }}</span> W /
+                <span data-metric="gpu.clock_mhz">{{ metrics.gpu.clock_mhz|default_if_none:"N/A" }}</span> MHz
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">CPU details</p>
+              <h2 data-metric="cpu.model">{{ metrics.cpu.model }}</h2>
+              <p class="secondary">
+                <span data-metric="cpu.physical_cores">{{ metrics.cpu.physical_cores }}</span> physical cores /
+                <span data-metric="cpu.logical_cores">{{ metrics.cpu.logical_cores }}</span> threads
+              </p>
+              <p class="secondary">
+                <span data-metric="cpu.frequency_mhz">{{ metrics.cpu.frequency_mhz }}</span> MHz /
+                <span data-metric="cpu.temperature_c" data-format="temp">{{ metrics.cpu.temperature_c|default_if_none:"N/A" }}</span>
+                CPU temp
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">System</p>
+              <h2 data-metric="system.uptime_display">{{ metrics.system.uptime_display }}</h2>
+              <p class="secondary">
+                <span data-metric="system.os">{{ metrics.system.os }}</span> /
+                <span data-metric="system.architecture">{{ metrics.system.architecture }}</span>
+              </p>
+              <p class="secondary">
+                Motherboard
+                <span data-metric="system.motherboard_manufacturer">{{ metrics.system.motherboard_manufacturer|default_if_none:"N/A" }}</span>
+                <span data-metric="system.motherboard_model">{{ metrics.system.motherboard_model|default_if_none:"N/A" }}</span>
+              </p>
+              <p class="secondary">
+                BIOS <span data-metric="system.bios_version">{{ metrics.system.bios_version|default_if_none:"N/A" }}</span>
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Power</p>
+              <h2>
+                <span data-metric="power.cpu_power_w">{{ metrics.power.cpu_power_w|default_if_none:"N/A" }}</span> W CPU /
+                <span data-metric="power.system_power_w">{{ metrics.power.system_power_w|default_if_none:"N/A" }}</span> W system
+              </h2>
+              <p class="secondary">
+                GPU power
+                <span data-metric="gpu.power_w">{{ metrics.gpu.power_w|default_if_none:"N/A" }}</span> W
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Thermals / fans</p>
+              <h2>
+                <span data-metric="cpu.temperature_c" data-format="temp">{{ metrics.cpu.temperature_c|default_if_none:"N/A" }}</span> CPU /
+                <span data-metric="gpu.temperature_c" data-format="temp">{{ metrics.gpu.temperature_c|default_if_none:"N/A" }}</span> GPU
+              </h2>
+              <p class="secondary">
+                Fans tracked: {{ metrics.fans|length }}
+              </p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Efficiency</p>
+              <h2>
+                <span data-metric="efficiency_score">{{ metrics.efficiency_score|default_if_none:"N/A" }}</span>
+                / 100
+              </h2>
+              <p class="secondary">Heuristic score based on current load and thermals</p>
+            </article>
+
+            <article class="glass-card">
+              <p class="card-label">Drive health</p>
+              <dl class="inventory-list">
+                {% for drive in metrics.drive_health %}
+                <div class="inventory-row">
+                  <dt>{{ drive.label }}</dt>
+                  <dd>
+                    {{ drive.health_status|default_if_none:"N/A" }}
+                    {% if drive.temperature_c %}/ {{ drive.temperature_c }}°C{% endif %}
+                    {% if drive.wear_percent %}/ {{ drive.wear_percent }}% wear{% endif %}
+                  </dd>
+                </div>
+                {% empty %}
+                <div class="inventory-row">
+                  <dt>No drive health data</dt>
+                  <dd>N/A</dd>
+                </div>
+                {% endfor %}
+              </dl>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" data-tab-panel="history">
+          <div class="inventory-card">
+            <div class="panel-header-row">
+              <div>
+                <p class="eyebrow">Usage history</p>
+                <h2>Recent samples</h2>
+              </div>
+              <div class="history-filters" role="group" aria-label="History range">
+                <button class="history-filter is-active" type="button" data-history-range="15m">15m</button>
+                <button class="history-filter" type="button" data-history-range="1h">1h</button>
+                <button class="history-filter" type="button" data-history-range="24h">24h</button>
+                <button class="history-filter" type="button" data-history-range="7d">7d</button>
+              </div>
+            </div>
+            <div class="history-meta">Showing <span data-history-range-label>24h</span></div>
+            <dl class="inventory-list">
+              {% for sample in recent_samples %}
+              <div class="inventory-row">
+                <dt>{{ sample.captured_at }}</dt>
+                <dd>
+                  CPU {{ sample.cpu_percent }}% / Memory {{ sample.memory_percent }}% /
+                  Storage {{ sample.storage_percent }}%
+                </dd>
+              </div>
+              {% empty %}
+              <div class="inventory-row">
+                <dt>No history yet</dt>
+                <dd>N/A</dd>
+              </div>
+              {% endfor %}
+            </dl>
+          </div>
+        </section>
+
+        <section class="panel" data-tab-panel="alerts">
+          <div class="inventory-card">
+            <div>
+              <p class="eyebrow">Alerts</p>
+              <h2>Current conditions</h2>
+            </div>
+            <dl class="inventory-list">
+              {% for alert in alerts %}
+              <div class="inventory-row">
+                <dt>{{ alert.title }}</dt>
+                <dd>
+                  <div>{{ alert.message }}</div>
+                  <div class="row-actions">
+                    <span class="alert-state">
+                      {% if alert.acknowledged %}Acknowledged{% else %}Unacknowledged{% endif %}
+                    </span>
+                    <button
+                      class="history-filter"
+                      type="button"
+                      data-alert-acknowledge
+                      data-alert-fingerprint="{{ alert.fingerprint }}"
+                      {% if alert.acknowledged %}disabled{% endif %}
+                    >
+                      Acknowledge
+                    </button>
+                  </div>
+                </dd>
+              </div>
+              {% empty %}
+              <div class="inventory-row">
+                <dt>All clear</dt>
+                <dd>No active alerts</dd>
+              </div>
+              {% endfor %}
+            </dl>
           </div>
         </section>
 
