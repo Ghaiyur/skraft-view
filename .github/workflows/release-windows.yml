@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -42,7 +42,7 @@ jobs:
           Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: SKRAFT-View-windows-x64
           path: build/windows/SKRAFT-View-windows-x64.zip
