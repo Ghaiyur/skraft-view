@@ -13,9 +13,13 @@
 
     <g transform="translate(89 1)">
       <path
-        d="M18 0L35.5 40H27.4L24.2 32H11.8L8.6 40H0.5L18 0Z M18 10.2L22.9 25.8H13.1Z"
+        d="M2 40 L18 0 L34 40"
         fill="#9ed84a"
-        fill-rule="evenodd"
+        fill="none"
+        stroke="#9ed84a"
+        stroke-width="7.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
     </g>
 
