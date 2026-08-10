@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="80" viewBox="0 0 260 80" role="img" aria-label="SKRAFT logo">
-  <defs>
-    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#b8ef6a"/>
-      <stop offset="100%" stop-color="#7ecf39"/>
-    </linearGradient>
-    <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0d120f" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#0d120f" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="221" height="75" viewBox="0 0 221 75" role="img" aria-label="SKRAFT logo">
+  <g transform="translate(14 10)">
+    <text
+      x="0"
+      y="42"
+      font-family="Arial Black, Segoe UI Black, Segoe UI, Helvetica, sans-serif"
+      font-size="40"
+      font-weight="900"
+      letter-spacing="-1.8"
+      fill="#050506"
+    >SKR</text>
 
-  <rect x="0" y="0" width="260" height="80" rx="16" fill="#ffffff"/>
-  <rect x="0" y="0" width="260" height="80" rx="16" fill="url(#shadow)"/>
-
-  <g transform="translate(18 16)">
-    <text x="0" y="38" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="38" font-weight="900" letter-spacing="-1.6" fill="#0b0d0c">SKR</text>
-
-    <g transform="translate(88 2)">
-      <path d="M18 0 L36 40 L26 40 L22.1 31 H13.9 L10 40 H0 L18 0 Z" fill="url(#green)"/>
-      <path d="M14.2 23.5 H21.8 L18 14.6 Z" fill="#ffffff" opacity="0.9"/>
+    <g transform="translate(89 1)">
+      <path
+        d="M18 0L35.5 40H27.4L24.2 32H11.8L8.6 40H0.5L18 0Z M18 10.2L22.9 25.8H13.1Z"
+        fill="#9ed84a"
+        fill-rule="evenodd"
+      />
     </g>
 
-    <text x="126" y="38" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="38" font-weight="900" letter-spacing="-1.6" fill="#0b0d0c">FT</text>
-
-    <path d="M0 53 H170" stroke="#0b0d0c" stroke-opacity="0.08" stroke-width="2" stroke-linecap="round"/>
+    <text
+      x="125"
+      y="42"
+      font-family="Arial Black, Segoe UI Black, Segoe UI, Helvetica, sans-serif"
+      font-size="40"
+      font-weight="900"
+      letter-spacing="-1.8"
+      fill="#050506"
+    >FT</text>
   </g>
 </svg>
