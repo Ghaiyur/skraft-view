@@ -123,6 +123,24 @@ button {
   margin-bottom: 32px;
 }
 
+.nav-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.02em;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.nav-brand:hover {
+  color: var(--text);
+}
+
 .top-actions {
   gap: 12px;
   flex-wrap: wrap;
@@ -251,6 +269,10 @@ button {
   letter-spacing: 0.16em;
   font-size: 0.75rem;
   color: var(--text-soft);
+}
+
+.lambda-green {
+  color: var(--accent);
 }
 
 h1,

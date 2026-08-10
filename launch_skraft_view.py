@@ -154,7 +154,7 @@ def run_server() -> None:
     django.setup()
 
     port = reserve_port()
-    url = f"http://127.0.0.1:{port}/"
+    url = f"http://127.0.0.1:{port}/monitor/"
 
     print(f"Starting skraft view at {url}")
     print("Close this window to stop the local app.")
