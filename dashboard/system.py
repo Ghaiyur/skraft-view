@@ -129,9 +129,7 @@ def _parse_csv_output(output: str) -> list[dict[str, str]]:
     reader = csv.DictReader(StringIO(output))
     return [
         {
-            str(key).strip().lower(): (
-                str(value).strip() if value is not None else ""
-            )
+            str(key).strip().lower(): (str(value).strip() if value is not None else "")
             for key, value in row.items()
         }
         for row in reader
