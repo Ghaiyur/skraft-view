@@ -6,7 +6,7 @@
 [![Basic Checks](https://github.com/Ghaiyur/skraft-view/actions/workflows/checks.yml/badge.svg)](https://github.com/Ghaiyur/skraft-view/actions/workflows/checks.yml)
 [![Windows Release Build](https://github.com/Ghaiyur/skraft-view/actions/workflows/release-windows.yml/badge.svg)](https://github.com/Ghaiyur/skraft-view/actions/workflows/release-windows.yml)
 
-SKRAFT View is an open source desktop system monitor with a local web dashboard.
+SKRΛFT View is an open source desktop system monitor with a local web dashboard.
 
 It is being built to feel simple for end users:
 

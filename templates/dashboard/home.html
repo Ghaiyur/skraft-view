@@ -1,10 +1,10 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>skraft view</title>
+    <title>SKRΛFT View | Lightweight Real-Time PC Health &amp; Telemetry</title>
     <link rel="stylesheet" href="{% static 'css/app.css' %}" />
     <script defer src="{% static 'js/app.js' %}"></script>
   </head>
@@ -15,11 +15,9 @@
 
       <header class="hero">
         <div class="brand-row">
-          <img
-            class="brand-logo"
-            src="{% static 'img/skraft-logo.svg' %}"
-            alt="SKRAFT logo"
-          />
+          <a href="/monitor/" class="nav-brand" aria-label="SKRΛFT Home">
+            SKR<span class="lambda-green">Λ</span>FT
+          </a>
           <div class="top-actions">
             <button class="theme-toggle" type="button" data-theme-toggle>
               Toggle theme
@@ -39,11 +37,14 @@
 
         <div class="hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Open source system visibility</p>
-            <h1>skraft view</h1>
+            <p class="eyebrow">
+              SKR<span class="lambda-green">Λ</span>FT View provides a clean live dashboard,
+              thermal monitoring, hardware inventory, and system metrics.
+            </p>
+            <h1>Lightweight Real-Time PC Health &amp; Telemetry.</h1>
             <p class="lede">
-              Lightweight monitoring for the machine you are on, with a clean live
-              dashboard, hardware inventory, and straightforward legal terms.
+              For your desktop, workstation, or edge node with zero bloat and straightforward
+              terms. Open the local <span>SKR<span class="lambda-green">Λ</span>FT</span> monitor in your browser.
             </p>
           </div>
 
@@ -280,7 +281,7 @@
                   <dt>{{ drive.label }}</dt>
                   <dd>
                     {{ drive.health_status|default_if_none:"N/A" }}
-                    {% if drive.temperature_c %}/ {{ drive.temperature_c }}°C{% endif %}
+                    {% if drive.temperature_c %}/ {{ drive.temperature_c }}Â°C{% endif %}
                     {% if drive.wear_percent %}/ {{ drive.wear_percent }}% wear{% endif %}
                   </dd>
                 </div>
@@ -390,7 +391,7 @@
               <p class="eyebrow">Terms of use</p>
               <h2>Open source</h2>
               <p>
-                skraft view is open source. We will decide what else to add in this
+                SKR<span class="lambda-green">Λ</span>FT View is open source. We will decide what else to add in this
                 section later as the project grows.
               </p>
             </article>
@@ -444,3 +445,4 @@
     </div>
   </body>
 </html>
+

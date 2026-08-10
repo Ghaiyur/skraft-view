@@ -10,8 +10,13 @@ class DashboardTests(TestCase):
     def test_home_page_loads(self) -> None:
         response = self.client.get(reverse("dashboard:home"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "skraft view")
+        self.assertContains(response, "Lightweight Real-Time PC Health")
         self.assertGreater(MetricSample.objects.count(), 0)
+
+    def test_root_redirects_to_monitor(self) -> None:
+        response = self.client.get("/", follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("dashboard:home"))
 
     def test_metrics_api_returns_nested_sections(self) -> None:
         response = self.client.get(reverse("dashboard:metrics-api"))
