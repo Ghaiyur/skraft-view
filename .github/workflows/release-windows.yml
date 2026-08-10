@@ -42,7 +42,7 @@ jobs:
           Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: SKRAFT-View-windows-x64
           path: build/windows/SKRAFT-View-windows-x64.zip
