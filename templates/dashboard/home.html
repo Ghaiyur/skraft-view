@@ -25,9 +25,16 @@
               Toggle theme
             </button>
             <button class="quit-button" type="button" data-quit-app>
-              Quit app
+              Quit server
             </button>
           </div>
+        </div>
+
+        <div class="connection-banner" data-connection-banner hidden role="status" aria-live="polite">
+          <span class="connection-banner-title" data-connection-title>Offline</span>
+          <span class="connection-banner-message" data-connection-message>
+            Lost connection to the local app. Retrying...
+          </span>
         </div>
 
         <div class="hero-grid">
@@ -409,6 +416,31 @@
           </div>
         </section>
       </main>
+    </div>
+
+    <div class="quit-modal" data-quit-modal hidden role="dialog" aria-modal="true" aria-labelledby="quit-modal-title">
+      <div class="quit-modal-card">
+        <p class="eyebrow">Session control</p>
+        <h2 id="quit-modal-title">Shut down the local server?</h2>
+        <p class="secondary">
+          Closing the browser can leave the server running. Choose whether you want
+          to stop it now, or keep it alive for another browser window.
+        </p>
+
+        <label class="quit-modal-option">
+          <input type="checkbox" data-shutdown-on-close />
+          Shut down the server when I close this browser next time
+        </label>
+
+        <div class="quit-modal-actions">
+          <button class="theme-toggle" type="button" data-quit-cancel>
+            Cancel
+          </button>
+          <button class="quit-button" type="button" data-quit-confirm>
+            Shut down server
+          </button>
+        </div>
+      </div>
     </div>
   </body>
 </html>

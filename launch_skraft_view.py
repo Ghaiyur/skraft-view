@@ -106,14 +106,10 @@ def open_browser_when_ready(url: str) -> None:
 
 
 def monitor_for_shutdown(httpd) -> None:
-    from dashboard.session_state import should_shutdown
-
+    # Auto-shutdown is intentionally disabled so the local server can recover
+    # from temporary browser throttling or connection loss.
     while True:
-        time.sleep(2)
-        if should_shutdown():
-            print("No active browser tabs detected. Shutting down skraft view...")
-            httpd.shutdown()
-            return
+        time.sleep(60)
 
 
 def relaunch_inside_venv() -> None:
@@ -171,9 +167,6 @@ def run_server() -> None:
     app = StaticFilesHandler(get_wsgi_application())
     with make_server("127.0.0.1", port, app) as httpd:
         register_shutdown_callback(httpd.shutdown)
-        threading.Thread(
-            target=monitor_for_shutdown, args=(httpd,), daemon=True
-        ).start()
         httpd.serve_forever()
 
 
