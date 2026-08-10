@@ -1,10 +1,10 @@
 const root = document.documentElement;
 const storageKey = "skraft-theme";
 const sessionStorageKey = "skraft-session-id";
-let sessionHeartbeatTimer = null;
-let historyRefreshTimer = null;
-let alertsRefreshTimer = null;
+const shutdownOnCloseKey = "skraft-shutdown-on-close";
 let selectedHistoryRange = "24h";
+const pollers = {};
+let connectionBannerDismissed = false;
 
 function cryptoRandomUuidFallback() {
   const bytes = new Uint8Array(16);
@@ -92,6 +92,126 @@ function updateMetrics(data) {
     const nextValue = getNestedValue(data, node.dataset.meter);
     node.style.width = `${nextValue ?? 0}%`;
   });
+}
+
+function getConnectionBanner() {
+  return document.querySelector("[data-connection-banner]");
+}
+
+function setConnectionState(online, message) {
+  const banner = getConnectionBanner();
+  if (!banner) {
+    return;
+  }
+
+  const title = banner.querySelector("[data-connection-title]");
+  const body = banner.querySelector("[data-connection-message]");
+
+  if (online) {
+    banner.hidden = true;
+    banner.dataset.state = "online";
+    if (!connectionBannerDismissed) {
+      console.info("Local connection restored.");
+      connectionBannerDismissed = true;
+    }
+    return;
+  }
+
+  banner.hidden = false;
+  banner.dataset.state = "offline";
+  if (title) {
+    title.textContent = "Offline";
+  }
+  if (body) {
+    body.textContent = message || "Lost connection to the local app. Retrying...";
+  }
+}
+
+function markConnectionFailure(message) {
+  setConnectionState(false, message);
+}
+
+function markConnectionRecovered() {
+  setConnectionState(true);
+}
+
+function getShutdownOnClosePreference() {
+  return window.localStorage.getItem(shutdownOnCloseKey) === "1";
+}
+
+function setShutdownOnClosePreference(enabled) {
+  window.localStorage.setItem(shutdownOnCloseKey, enabled ? "1" : "0");
+}
+
+function registerPoller(name, task, baseDelay, maxDelay) {
+  pollers[name] = {
+    task,
+    baseDelay,
+    maxDelay,
+    delay: baseDelay,
+    timer: null,
+    running: false,
+  };
+}
+
+function clearPoller(name) {
+  const poller = pollers[name];
+  if (poller?.timer) {
+    window.clearTimeout(poller.timer);
+    poller.timer = null;
+  }
+}
+
+function schedulePoller(name, delay) {
+  const poller = pollers[name];
+  if (!poller) {
+    return;
+  }
+
+  clearPoller(name);
+  poller.timer = window.setTimeout(() => {
+    void runPoller(name);
+  }, delay);
+}
+
+async function runPoller(name) {
+  const poller = pollers[name];
+  if (!poller || poller.running) {
+    return;
+  }
+
+  poller.running = true;
+  let ok = false;
+  try {
+    ok = await poller.task();
+  } finally {
+    poller.running = false;
+  }
+
+  if (ok) {
+    poller.delay = poller.baseDelay;
+    markConnectionRecovered();
+  } else {
+    poller.delay = Math.min(Math.max(poller.delay * 1.8, poller.baseDelay), poller.maxDelay);
+    markConnectionFailure("Lost connection to the local app. Retrying...");
+  }
+
+  schedulePoller(name, poller.delay);
+}
+
+function startPoller(name, immediate = false) {
+  const poller = pollers[name];
+  if (!poller) {
+    return;
+  }
+
+  clearPoller(name);
+  poller.delay = poller.baseDelay;
+  schedulePoller(name, immediate ? 0 : poller.baseDelay);
+}
+
+function startAllPollers(immediate = false) {
+  Object.keys(pollers).forEach((name) => startPoller(name, immediate));
 }
 
 function buildSparklinePath(values) {
@@ -266,13 +386,14 @@ async function refreshMetrics() {
     });
 
     if (!response.ok) {
-      return;
+      return false;
     }
 
     const data = await response.json();
     updateMetrics(data);
+    return true;
   } catch (error) {
-    console.error("Unable to refresh metrics", error);
+    return false;
   }
 }
 
@@ -283,12 +404,13 @@ async function refreshHistory() {
     });
 
     if (!response.ok) {
-      return;
+      return false;
     }
 
     renderHistoryPanel(await response.json());
+    return true;
   } catch (error) {
-    console.error("Unable to refresh history", error);
+    return false;
   }
 }
 
@@ -299,12 +421,13 @@ async function refreshAlerts() {
     });
 
     if (!response.ok) {
-      return;
+      return false;
     }
 
     renderAlertPanel(await response.json());
+    return true;
   } catch (error) {
-    console.error("Unable to refresh alerts", error);
+    return false;
   }
 }
 
@@ -320,51 +443,57 @@ async function acknowledgeAlert(fingerprint) {
       return;
     }
 
-    refreshAlerts();
+    void refreshAlerts();
   } catch (error) {
-    console.error("Unable to acknowledge alert", error);
+    markConnectionFailure("Lost connection while acknowledging an alert. Retrying...");
   }
 }
 
 async function postSessionState(url) {
   const sessionId = getSessionId();
   try {
-    await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
       keepalive: true,
     });
+
+    return response.ok;
   } catch (error) {
-    console.error("Unable to sync session state", error);
+    return false;
   }
 }
 
-function initSessionLifecycle() {
-  postSessionState("/api/session/heartbeat/");
-  sessionHeartbeatTimer = window.setInterval(() => {
-    postSessionState("/api/session/heartbeat/");
-  }, 5000);
-
-  const closePayload = JSON.stringify({ sessionId: getSessionId() });
-  const closeUrl = `${window.location.origin}/api/session/close/`;
-
-  const sendClose = () => {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(closeUrl, new Blob([closePayload], { type: "application/json" }));
-      return;
-    }
-    postSessionState("/api/session/close/");
-  };
-
-  window.addEventListener("pagehide", sendClose);
-  window.addEventListener("beforeunload", sendClose);
+function getQuitModal() {
+  return document.querySelector("[data-quit-modal]");
 }
 
-async function quitApp() {
-  if (sessionHeartbeatTimer) {
-    window.clearInterval(sessionHeartbeatTimer);
+function openQuitModal() {
+  const modal = getQuitModal();
+  const checkbox = modal?.querySelector("[data-shutdown-on-close]");
+  if (!modal || !checkbox) {
+    return;
   }
+
+  checkbox.checked = getShutdownOnClosePreference();
+  modal.hidden = false;
+  modal.dataset.open = "true";
+  checkbox.focus();
+}
+
+function closeQuitModal() {
+  const modal = getQuitModal();
+  if (!modal) {
+    return;
+  }
+
+  modal.hidden = true;
+  delete modal.dataset.open;
+}
+
+async function sendServerQuit() {
+  Object.keys(pollers).forEach((name) => clearPoller(name));
 
   try {
     await fetch("/api/quit/", {
@@ -376,7 +505,56 @@ async function quitApp() {
   } catch (error) {
     console.error("Unable to quit app cleanly", error);
   }
+}
 
+function initSessionLifecycle() {
+  registerPoller("session", () => postSessionState("/api/session/heartbeat/"), 5000, 60000);
+  startPoller("session", true);
+
+  const closePayload = JSON.stringify({ sessionId: getSessionId() });
+  const closeUrl = `${window.location.origin}/api/session/close/`;
+  const quitPayload = "{}";
+  const quitUrl = `${window.location.origin}/api/quit/`;
+
+  const sendClose = () => {
+    if (getShutdownOnClosePreference()) {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(quitUrl, new Blob([quitPayload], { type: "application/json" }));
+        return;
+      }
+      void sendServerQuit();
+      return;
+    }
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(closeUrl, new Blob([closePayload], { type: "application/json" }));
+      return;
+    }
+    postSessionState("/api/session/close/");
+  };
+
+  window.addEventListener("pagehide", sendClose);
+  window.addEventListener("beforeunload", (event) => {
+    if (getShutdownOnClosePreference()) {
+      return;
+    }
+
+    event.preventDefault();
+    event.returnValue =
+      "Closing this browser keeps the local server running. Use Quit server if you want to stop it.";
+    return event.returnValue;
+  });
+}
+
+async function quitApp() {
+  const modal = getQuitModal();
+  const checkbox = modal?.querySelector("[data-shutdown-on-close]");
+  if (checkbox) {
+    setShutdownOnClosePreference(checkbox.checked);
+  }
+
+  closeQuitModal();
+  await sendServerQuit();
   window.setTimeout(() => {
     window.close();
   }, 300);
@@ -386,13 +564,31 @@ document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   initTabs();
   initSessionLifecycle();
+  registerPoller("metrics", refreshMetrics, 3000, 30000);
+  registerPoller("history", refreshHistory, 15000, 60000);
+  registerPoller("alerts", refreshAlerts, 15000, 60000);
 
   document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
     const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
     applyTheme(next);
   });
 
-  document.querySelector("[data-quit-app]")?.addEventListener("click", quitApp);
+  document.querySelector("[data-quit-app]")?.addEventListener("click", openQuitModal);
+  document.querySelector("[data-quit-confirm]")?.addEventListener("click", quitApp);
+  document.querySelector("[data-quit-cancel]")?.addEventListener("click", closeQuitModal);
+
+  const quitModal = getQuitModal();
+  quitModal?.addEventListener("click", (event) => {
+    if (event.target === quitModal) {
+      closeQuitModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && quitModal && !quitModal.hidden) {
+      closeQuitModal();
+    }
+  });
 
   document.addEventListener("click", (event) => {
     const target = event.target;
@@ -403,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const historyButton = target.closest("[data-history-range]");
     if (historyButton instanceof HTMLElement) {
       selectedHistoryRange = historyButton.dataset.historyRange || selectedHistoryRange;
-      refreshHistory();
+      void refreshHistory();
       return;
     }
 
@@ -416,10 +612,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  refreshMetrics();
-  window.setInterval(refreshMetrics, 3000);
-  refreshHistory();
-  historyRefreshTimer = window.setInterval(refreshHistory, 15000);
-  refreshAlerts();
-  alertsRefreshTimer = window.setInterval(refreshAlerts, 15000);
+  window.addEventListener("online", () => startAllPollers(true));
+  startAllPollers(true);
 });
